@@ -21,8 +21,8 @@ local ship_items = function()
   return
   {
     ["stone-wall"] = 100,
-    ["burner-mining-drill"] = 4,
-    ["stone-furnace"] = 4
+    ["burner-mining-drill"] = 10,
+    ["stone-furnace"] = 10
   }
 end
 
@@ -38,6 +38,7 @@ local ship_parts = function()
   return crash_site.default_ship_parts()
 end
 -----------------------------------------------------------
+storage.quality = "normal"
 storage.strafer = "small-strafer-pentapod"
 storage.stomper = "small-stomper-pentapod"
 storage.demo = "small-demolisher"
@@ -162,6 +163,7 @@ end
 local on_surface_cleared = function(event)
 	if event.surface_index == 1 then
 	storage.nesting_spot = {{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}}
+    storage.quality = "normal"
 	storage.recently_reset = "true"
 	storage.strafer = "small-strafer-pentapod"
 	storage.stomper = "small-stomper-pentapod"
@@ -169,7 +171,8 @@ local on_surface_cleared = function(event)
     storage.victory = false
 	game.map_settings.enemy_expansion.settler_group_min_size = 1
 	game.map_settings.enemy_expansion.settler_group_max_size = 2
-	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.5
+	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 1
+    game.map_settings.asteroids.spawning_rate = 0.1
 	game.forces["player"].reset()
 	game.forces["enemy"].reset()
 	game.forces["enemy"].reset_evolution()
@@ -239,7 +242,7 @@ script.set_event_filter(defines.events.on_entity_died, {{filter = "name", name =
 script.on_event(defines.events.on_post_entity_died,
 function(event)
 	game.surfaces[1].create_entity{name = storage.strafer, position = event.position, quality = "legendary"}
-	game.surfaces[1].create_entity{name = storage.stomper, position = event.position, quality = "legendary"}
+	game.surfaces[1].create_entity{name = storage.stomper, position = event.position, quality = storage.quality}
 end
 )
 script.set_event_filter(defines.events.on_post_entity_died, {{filter = "type", type = "unit-spawner"}})
@@ -343,14 +346,23 @@ local on_biter_base_built = function(event)
 end
 -------------------------------------------------------------------
 script.on_nth_tick(3600, function()
+    if math.random(1, 5) == 1 then
+    game.map_settings.asteroids.spawning_rate = 10
+    else
+    game.map_settings.asteroids.spawning_rate = 0.1
+    end
 	local evo = game.forces["enemy"].get_evolution_factor(1)
 	local ex = game.map_settings.enemy_expansion
 	if ex.settler_group_min_size < 90 then
 	ex.settler_group_min_size = ex.settler_group_min_size + 1
 	ex.settler_group_max_size = ex.settler_group_max_size + 1
 	end
+    if evo > 0.2 and evo < 0.6 then
+    game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.5
+    end
 	if evo > 0.6 and evo < 0.91 then
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.25
+    storage.quality = "legendary"
 	storage.strafer = "medium-strafer-pentapod"
 	storage.stomper = "medium-stomper-pentapod"
 	end
@@ -393,6 +405,15 @@ local on_player_created = function(event)
     storage.init_ran = true
 
     game.forces["player"].chart(game.surfaces[1], {{x = -200, y = -200}, {x = 200, y = 200}})
+    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.add_permission_group, false)
+    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.delete_permission_group, false)
+    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.edit_permission_group, false)
+    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.import_permissions_string, false)
+    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.map_editor_action, false)
+    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.toggle_map_editor, false)
+    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.change_multiplayer_config, false)
+    -- game.permissions.create_group('Owner')
+    -- game.permissions.get_group('Owner').add_player("Atraps003")
 
     if not storage.disable_crashsite then
       local surface = player.surface
