@@ -133,10 +133,8 @@ function reset()
 	game.surfaces["aquilo"].clear(true)
 	end
 	-- We delete space platforms
-	for _, surface in pairs(game.surfaces) do
-		if surface.platform then
-			game.delete_surface(surface)
-		end
+	for _, platform in pairs(game.forces["player"].platforms) do
+		platform.destroy(1)
 	end
 end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
