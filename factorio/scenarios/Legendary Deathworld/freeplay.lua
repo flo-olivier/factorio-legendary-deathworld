@@ -91,7 +91,7 @@ local change_seed = function()
 end
 
 local place_turret_at_spawn = function()
-        local turret = game.surfaces[1].create_entity{name="gun-turret",position={-7,2},force="player"}
+        local turret = game.surfaces[1].create_entity{name="gun-turret",position={-7,2},force="player", quality = "legendary"}
         turret.insert{name="firearm-magazine",count=100}
         local wall = game.surfaces[1].create_entity
         wall{name="stone-wall",position={-9,0},force="player"}
@@ -345,16 +345,18 @@ end
 -------------------------------------------------------------------
 script.on_nth_tick(3600, function()
     if math.random(1, 5) == 1 then
-    game.map_settings.asteroids.spawning_rate = 10
+	    game.map_settings.asteroids.spawning_rate = 10
     else
-    game.map_settings.asteroids.spawning_rate = 0.1
+		game.map_settings.asteroids.spawning_rate = 0.1
+
+		local ex = game.map_settings.enemy_expansion
+		if ex.settler_group_min_size < 90 then
+			ex.settler_group_min_size = ex.settler_group_min_size + 1
+			ex.settler_group_max_size = ex.settler_group_max_size + 1
+		end	
     end
+	
 	local evo = game.forces["enemy"].get_evolution_factor(1)
-	local ex = game.map_settings.enemy_expansion
-	if ex.settler_group_min_size < 90 then
-	ex.settler_group_min_size = ex.settler_group_min_size + 1
-	ex.settler_group_max_size = ex.settler_group_max_size + 1
-	end
     if evo > 0.2 and evo < 0.6 then
     game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.5
     end
