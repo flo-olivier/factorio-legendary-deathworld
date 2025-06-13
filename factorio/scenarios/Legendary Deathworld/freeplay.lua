@@ -173,8 +173,8 @@ local on_surface_cleared = function(event)
 	storage.demo_quality = "normal"
 	storage.demo = "small-demolisher"
     storage.victory = false
-	game.map_settings.enemy_expansion.settler_group_min_size = 1
-	game.map_settings.enemy_expansion.settler_group_max_size = 2
+	game.map_settings.enemy_expansion.settler_group_min_size = 4
+	game.map_settings.enemy_expansion.settler_group_max_size = 5
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 1
 	game.forces["player"].reset()
 	game.forces["enemy"].reset()
