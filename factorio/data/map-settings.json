@@ -2,7 +2,7 @@
   "difficulty_settings":
   {
     "technology_price_multiplier": 1,
-    "spoil_time_modifier" : 1
+    "spoil_time_modifier" : 3
   },
   "pollution":
   {
@@ -115,7 +115,7 @@
   },
   "asteroids":
   {
-    "spawning_rate" : 0.1,
+    "spawning_rate" : 1,
     "max_ray_portals_expanded_per_tick" : 100
   },
   "max_failed_behavior_count": 3
