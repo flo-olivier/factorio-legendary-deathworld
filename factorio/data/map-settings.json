@@ -39,8 +39,8 @@
     "neighbouring_chunk_coefficient": 0.5,
     "neighbouring_base_chunk_coefficient": 0.4,
     "max_colliding_tiles_coefficient": 0.9,
-    "settler_group_min_size": 4,
-    "settler_group_max_size": 5,
+    "settler_group_min_size": 5,
+    "settler_group_max_size": 6,
     "min_expansion_cooldown": 3500,
     "max_expansion_cooldown": 3600
   },
