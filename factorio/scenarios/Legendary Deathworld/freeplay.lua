@@ -41,6 +41,8 @@ end
 storage.quality = "normal"
 storage.strafer = "small-strafer-pentapod"
 storage.stomper = "small-stomper-pentapod"
+storage.demo_rng = 20
+storage.demo_quality = "normal"
 storage.demo = "small-demolisher"
 storage.recently_reset = "false"
 storage.victory = false
@@ -133,8 +135,10 @@ function reset()
 	game.surfaces["aquilo"].clear(true)
 	end
 	-- We delete space platforms
-	for _, platform in pairs(game.forces["player"].platforms) do
-		platform.destroy(1)
+	for _, surface in pairs(game.surfaces) do
+		if surface.platform then
+			game.delete_surface(surface)
+		end
 	end
 end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -165,12 +169,13 @@ local on_surface_cleared = function(event)
 	storage.recently_reset = "true"
 	storage.strafer = "small-strafer-pentapod"
 	storage.stomper = "small-stomper-pentapod"
+	storage.demo_rng = 20
+	storage.demo_quality = "normal"
 	storage.demo = "small-demolisher"
     storage.victory = false
 	game.map_settings.enemy_expansion.settler_group_min_size = 1
 	game.map_settings.enemy_expansion.settler_group_max_size = 2
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 1
-    game.map_settings.asteroids.spawning_rate = 0.1
 	game.forces["player"].reset()
 	game.forces["enemy"].reset()
 	game.forces["enemy"].reset_evolution()
@@ -192,8 +197,13 @@ local on_player_respawned = function(event)
 		surface.force_generate_chunk_requests()
 		crash_site.create_crash_site(surface, {-5,-6}, util.copy(storage.crashed_ship_items), util.copy(storage.crashed_debris_items), util.copy(storage.crashed_ship_parts))
 		game.forces["player"].chart(surface, {{x = -200, y = -200}, {x = 200, y = 200}})
+		game.forces["enemy"].friendly_fire = false
 		util.insert_safe(player, storage.created_items)
-        place_turret_at_spawn()
+        	place_turret_at_spawn()
+		-- Cleanup platforms that have no surface
+		for _, platform in pairs(game.forces["player"].platforms) do
+		platform.destroy(1)
+		end
 	else
 	util.insert_safe(player, storage.respawn_items)
 	end
@@ -224,6 +234,9 @@ local on_research_finished = function(event)
 	if (event.research.name == "refined-flammables-6") then
 		game.forces["player"].set_turret_attack_modifier("flamethrower-turret", 0)
 	end
+	if (event.research.name == "laser") then
+		game.forces["player"].recipes["laser-turret"].productivity_bonus = 3
+	end
 end
 ------------------------------------------------------------------------------------------------
 script.on_event(defines.events.on_entity_died,
@@ -232,6 +245,7 @@ function(event)
 		local rand = math.random(1, 20)
 		storage.nesting_spot[rand][1] = event.entity.position.x
 		storage.nesting_spot[rand][2] = event.entity.position.y
+		game.surfaces[1].create_entity{name = "grenade", target = event.entity.position, position = event.entity.position, force = "enemy"}
 	end
 end
 )
@@ -241,6 +255,11 @@ script.on_event(defines.events.on_post_entity_died,
 function(event)
 	game.surfaces[1].create_entity{name = storage.strafer, position = event.position, quality = "legendary"}
 	game.surfaces[1].create_entity{name = storage.stomper, position = event.position, quality = storage.quality}
+	if game.forces["enemy"].get_evolution_factor(1) > 0.8 then
+	if math.random(1, storage.demo_rng) == 1 then
+	game.surfaces[1].create_entity{name = storage.demo, position = event.position, quality = storage.demo_quality}
+	end
+	end
 end
 )
 script.set_event_filter(defines.events.on_post_entity_died, {{filter = "type", type = "unit-spawner"}})
@@ -324,12 +343,6 @@ local on_unit_group_finished_gathering = function(event)
 		event.group.set_command(command)
 	end
 end
--------------------------------------------------------------------------------------
-local on_build_base_arrived = function(event)
-	if game.forces["enemy"].get_evolution_factor(1) > 0.95 then
-		game.surfaces[1].create_entity{name = storage.demo, position = event.group.position, quality = "legendary"}
-	end
-end
 -------------------------------------------------------------------
 local on_biter_base_built = function(event)
 	local x = event.entity.position.x
@@ -344,38 +357,46 @@ local on_biter_base_built = function(event)
 end
 -------------------------------------------------------------------
 script.on_nth_tick(3600, function()
-    if math.random(1, 5) == 1 then
-	    game.map_settings.asteroids.spawning_rate = 10
-    else
-		game.map_settings.asteroids.spawning_rate = 0.1
+    	if math.random(1, 5) == 1 then
+	game.map_settings.asteroids.spawning_rate = 10
+    	else
+	game.map_settings.asteroids.spawning_rate = 1
+	end
 
-		local ex = game.map_settings.enemy_expansion
-		if ex.settler_group_min_size < 90 then
-			ex.settler_group_min_size = ex.settler_group_min_size + 1
-			ex.settler_group_max_size = ex.settler_group_max_size + 1
-		end	
-    end
+	if (game.forces["player"].technologies["electronics"].researched or game.forces["player"].technologies["steam-power"].researched) then
+	local ex = game.map_settings.enemy_expansion
+	if ex.settler_group_min_size < 90 then
+	ex.settler_group_min_size = ex.settler_group_min_size + 1
+	ex.settler_group_max_size = ex.settler_group_max_size + 1
+	end
+	end
 	
 	local evo = game.forces["enemy"].get_evolution_factor(1)
-    if evo > 0.2 and evo < 0.6 then
-    game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.5
-    end
-	if evo > 0.6 and evo < 0.91 then
+    	if evo > 0.2 and evo < 0.6 then
+	storage.quality = "legendary"
+ 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.5
+   	end
+	if evo > 0.6 and evo < 0.7 then
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.25
-    storage.quality = "legendary"
 	storage.strafer = "medium-strafer-pentapod"
 	storage.stomper = "medium-stomper-pentapod"
 	end
-	if evo > 0.91 and evo < 0.95 then
-	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.125
+	if evo > 0.7 and evo < 0.8 then
 	storage.strafer = "big-strafer-pentapod"
 	storage.stomper = "big-stomper-pentapod"
 	end
-	if evo > 0.97 and evo < 0.99 then
+	if evo > 0.85 and evo < 0.95 then
+	storage.demo_quality = "legendary"
+	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.125
+	end
+	if evo > 0.95 and evo < 0.97 then
 	storage.demo = "medium-demolisher"
 	end
-	if evo > 0.99 then
+	if evo > 0.97 and evo < 0.98 then
 	storage.demo = "big-demolisher"
+	end
+	if evo > 0.98 then
+	storage.demo_rng = 5
 	end
 end)
 -------------------------------------------------------------------
@@ -405,6 +426,7 @@ local on_player_created = function(event)
     storage.init_ran = true
 
     game.forces["player"].chart(game.surfaces[1], {{x = -200, y = -200}, {x = 200, y = 200}})
+    game.forces["enemy"].friendly_fire = false
     -- game.permissions.get_group('Default').set_allows_action(defines.input_action.add_permission_group, false)
     -- game.permissions.get_group('Default').set_allows_action(defines.input_action.delete_permission_group, false)
     -- game.permissions.get_group('Default').set_allows_action(defines.input_action.edit_permission_group, false)
@@ -534,7 +556,6 @@ freeplay.events =
   [defines.events.on_chunk_generated] = on_chunk_generated,
   [defines.events.on_research_finished] = on_research_finished,
   [defines.events.on_unit_group_finished_gathering] = on_unit_group_finished_gathering,
-  [defines.events.on_build_base_arrived] = on_build_base_arrived,
   [defines.events.on_biter_base_built] = on_biter_base_built,
   [defines.events.on_space_platform_changed_state] = on_space_platform_changed_state,
   [defines.events.on_player_display_resolution_changed] = on_player_display_refresh,
