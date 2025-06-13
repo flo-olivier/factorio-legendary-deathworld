@@ -2,7 +2,7 @@
   "difficulty_settings":
   {
     "technology_price_multiplier": 1,
-    "spoil_time_modifier" : 3
+    "spoil_time_modifier" : 0.3
   },
   "pollution":
   {
