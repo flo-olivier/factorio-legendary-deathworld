@@ -211,10 +211,8 @@ end
 ------------------------------------------------------------------------------------------------
 local on_research_finished = function(event)
 	if (event.research.name == "quality-module") then
-	game.forces["player"].unlock_quality("epic")
-	game.forces["player"].unlock_quality("legendary")
-	game.forces["player"].technologies["epic-quality"].enabled = false
-	game.forces["player"].technologies["legendary-quality"].enabled = false
+	game.forces["player"].technologies["epic-quality"].researched = true
+	game.forces["player"].technologies["legendary-quality"].researched = true
 	end
 	if (event.research.name == "refined-flammables-1") then
 		game.forces["player"].set_turret_attack_modifier("flamethrower-turret", 0)
