@@ -176,6 +176,7 @@ local on_surface_cleared = function(event)
 	game.map_settings.enemy_expansion.settler_group_min_size = 5
 	game.map_settings.enemy_expansion.settler_group_max_size = 6
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 1
+    game.map_settings.enemy_evolution.time_factor = 0.000002
 	game.forces["player"].reset()
 	game.forces["enemy"].reset()
 	game.forces["enemy"].reset_evolution()
@@ -232,35 +233,65 @@ local on_research_finished = function(event)
 	if (event.research.name == "refined-flammables-6") then
 		game.forces["player"].set_turret_attack_modifier("flamethrower-turret", 0)
 	end
+    if (event.research.name == "stronger-explosives-2") then
+		game.forces["player"].set_ammo_damage_modifier("landmine", 0)
+	end
+    if (event.research.name == "stronger-explosives-3") then
+		game.forces["player"].set_ammo_damage_modifier("landmine", 0)
+	end
+    if (event.research.name == "stronger-explosives-4") then
+		game.forces["player"].set_ammo_damage_modifier("landmine", 0)
+	end
+    if (event.research.name == "stronger-explosives-5") then
+		game.forces["player"].set_ammo_damage_modifier("landmine", 0)
+	end
+    if (event.research.name == "stronger-explosives-6") then
+		game.forces["player"].set_ammo_damage_modifier("landmine", 0)
+	end
 	if (event.research.name == "laser") then
 		game.forces["player"].recipes["laser-turret"].productivity_bonus = 3
+	end
+    if (event.research.name == "defender") then
+		game.forces["player"].recipes["defender-capsule"].productivity_bonus = 3
+        game.forces["player"].following_robots_lifetime_modifier = 3
 	end
 end
 ------------------------------------------------------------------------------------------------
 script.on_event(defines.events.on_entity_died,
 function(event)
-	if math.random(1, 4) == 1 then
-		local rand = math.random(1, 20)
-		storage.nesting_spot[rand][1] = event.entity.position.x
-		storage.nesting_spot[rand][2] = event.entity.position.y
-		game.surfaces[1].create_entity{name = "grenade", target = event.entity.position, position = event.entity.position, force = "enemy"}
-	end
+    if event.entity.type == "asteroid" then
+        for count = 0, math.random(3, 10), 1 do
+            game.surfaces[event.entity.surface_index].create_entity{name = "huge-promethium-asteroid", quality= "legendary", position = event.entity.position}
+        end
+    else
+	    if math.random(1, 4) == 1 then
+	    	local rand = math.random(1, 20)
+		    storage.nesting_spot[rand][1] = event.entity.position.x
+		    storage.nesting_spot[rand][2] = event.entity.position.y
+	    end
+    end
 end
 )
-script.set_event_filter(defines.events.on_entity_died, {{filter = "name", name = "medium-spitter"}})
+script.set_event_filter(defines.events.on_entity_died, {{filter = "name", name = "medium-spitter"}, {filter = "name", name = "huge-metallic-asteroid"}, {filter = "name", name = "huge-carbonic-asteroid"}, {filter = "name", name = "huge-oxide-asteroid"}})
 ------------------------------------------------------------------------------------------------
 script.on_event(defines.events.on_post_entity_died,
 function(event)
-	game.surfaces[1].create_entity{name = storage.strafer, position = event.position, quality = "legendary"}
-	game.surfaces[1].create_entity{name = storage.stomper, position = event.position, quality = storage.quality}
-	if game.forces["enemy"].get_evolution_factor(1) > 0.8 then
-	if math.random(1, storage.demo_rng) == 1 then
-	game.surfaces[1].create_entity{name = storage.demo, position = event.position, quality = storage.demo_quality}
-	end
-	end
+    if event.prototype.type == "unit-spawner" then
+	    game.surfaces[1].create_entity{name = storage.strafer, position = event.position, quality = "legendary"}
+	    game.surfaces[1].create_entity{name = storage.stomper, position = event.position, quality = storage.quality}
+    	if game.forces["enemy"].get_evolution_factor(1) > 0.8 then
+	        if math.random(1, storage.demo_rng) == 1 then
+	            game.surfaces[1].create_entity{name = storage.demo, position = event.position, quality = storage.demo_quality}
+	        end
+	    end
+    else
+        if math.random(1, 10) == 1 then
+            game.surfaces[event.surface_index].create_entity{name = "grenade", target = event.position, position = event.position, force = "player", base_damage_modifiers = {damage_modifier = 0.43}}
+        end
+    end
 end
 )
-script.set_event_filter(defines.events.on_post_entity_died, {{filter = "type", type = "unit-spawner"}})
+script.set_event_filter(defines.events.on_post_entity_died, {{filter = "type", type = "unit-spawner"}, {filter = "type", type = "land-mine"}})
 ------------------------------------------------------------
 local on_unit_group_finished_gathering = function(event)
 	if math.random(1, 8) ~= 1 then
@@ -382,6 +413,7 @@ script.on_nth_tick(3600, function()
 	if evo > 0.7 and evo < 0.8 then
 	storage.strafer = "big-strafer-pentapod"
 	storage.stomper = "big-stomper-pentapod"
+    game.map_settings.enemy_evolution.time_factor = 0.00001
 	end
 	if evo > 0.85 and evo < 0.95 then
 	storage.demo_quality = "legendary"
