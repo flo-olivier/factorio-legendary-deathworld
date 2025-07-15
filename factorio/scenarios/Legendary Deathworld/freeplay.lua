@@ -94,7 +94,7 @@ end
 
 local place_turret_at_spawn = function()
         local turret = game.surfaces[1].create_entity{name="gun-turret",position={-7,2},force="player", quality = "legendary"}
-        turret.insert{name="firearm-magazine",count=100}
+        turret.insert{name="firearm-magazine",count=100,quality="legendary"}
         local wall = game.surfaces[1].create_entity
         wall{name="stone-wall",position={-9,0},force="player"}
         wall{name="stone-wall",position={-8,0},force="player"}
@@ -457,15 +457,16 @@ local on_player_created = function(event)
 
     game.forces["player"].chart(game.surfaces[1], {{x = -200, y = -200}, {x = 200, y = 200}})
     game.forces["enemy"].friendly_fire = false
-    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.add_permission_group, false)
-    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.delete_permission_group, false)
-    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.edit_permission_group, false)
-    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.import_permissions_string, false)
-    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.map_editor_action, false)
-    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.toggle_map_editor, false)
-    -- game.permissions.get_group('Default').set_allows_action(defines.input_action.change_multiplayer_config, false)
-    -- game.permissions.create_group('Owner')
-    -- game.permissions.get_group('Owner').add_player("Atraps003")
+    game.permissions.get_group('Default').set_allows_action(defines.input_action.add_permission_group, false)
+    game.permissions.get_group('Default').set_allows_action(defines.input_action.delete_permission_group, false)
+    game.permissions.get_group('Default').set_allows_action(defines.input_action.edit_permission_group, false)
+    game.permissions.get_group('Default').set_allows_action(defines.input_action.import_permissions_string, false)
+    game.permissions.get_group('Default').set_allows_action(defines.input_action.map_editor_action, false)
+    game.permissions.get_group('Default').set_allows_action(defines.input_action.toggle_map_editor, false)
+    game.permissions.get_group('Default').set_allows_action(defines.input_action.change_multiplayer_config, false)
+    game.permissions.get_group('Default').set_allows_action(defines.input_action.cheat, false)
+    game.permissions.create_group('All')
+    game.permissions.get_group('All').add_player("Atraps003")
 
     if not storage.disable_crashsite then
       local surface = player.surface
