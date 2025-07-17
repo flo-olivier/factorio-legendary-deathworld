@@ -379,7 +379,7 @@ local on_biter_base_built = function(event)
 	if (x > -34 and x < 34 and y > -34 and y < 34) then
 		game.print("[color=acid][font=default-large-bold]Biter nests growing near spawn. Defeat imminent![/font][/color]")
 		local nest_count = game.surfaces[1].count_entities_filtered{area={left_top = {x = -32, y = -32}, right_bottom = {x = 32, y = 32}},type={"turret","unit-spawner"}}
-		if nest_count > 3 then
+		if nest_count > 3 or game.ticks_played < 18000 then
 			reset()
 		end
 	end
