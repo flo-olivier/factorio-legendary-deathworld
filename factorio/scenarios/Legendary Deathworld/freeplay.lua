@@ -1,4 +1,4 @@
-local util = require("util")
+local util = require("quality-util")
 local crash_site = require("crash-site")
 
 local created_items = function()
@@ -96,18 +96,19 @@ local place_turret_at_spawn = function()
         local turret = game.surfaces[1].create_entity{name="gun-turret",position={-7,2},force="player", quality = "legendary"}
         turret.insert{name="firearm-magazine",count=100,quality="legendary"}
         local wall = game.surfaces[1].create_entity
-        wall{name="stone-wall",position={-9,0},force="player"}
-        wall{name="stone-wall",position={-8,0},force="player"}
-        wall{name="stone-wall",position={-7,0},force="player"}
-        wall{name="stone-wall",position={-6,0},force="player"}
-        wall{name="stone-wall",position={-6,1},force="player"}
-        wall{name="stone-wall",position={-6,2},force="player"}
-        wall{name="stone-wall",position={-6,3},force="player"}
-        wall{name="stone-wall",position={-7,3},force="player"}
-        wall{name="stone-wall",position={-8,3},force="player"}
-        wall{name="stone-wall",position={-9,3},force="player"}
-        wall{name="stone-wall",position={-9,2},force="player"}
-        wall{name="stone-wall",position={-9,1},force="player"}
+        wall{name="stone-wall",position={-9,0},force="player", quality = "legendary"}
+        wall{name="stone-wall",position={-8,0},force="player", quality = "legendary"}
+		wall{name="stone-wall",position={-7,0},force="player", quality = "legendary"}
+        wall{name="stone-wall",position={-7,0},force="player", quality = "legendary"}
+        wall{name="stone-wall",position={-6,0},force="player", quality = "legendary"}
+        wall{name="stone-wall",position={-6,1},force="player", quality = "legendary"}
+        wall{name="stone-wall",position={-6,2},force="player", quality = "legendary"}
+        wall{name="stone-wall",position={-6,3},force="player", quality = "legendary"}
+        wall{name="stone-wall",position={-7,3},force="player", quality = "legendary"}
+        wall{name="stone-wall",position={-8,3},force="player", quality = "legendary"}
+        wall{name="stone-wall",position={-9,3},force="player", quality = "legendary"}
+        wall{name="stone-wall",position={-9,2},force="player", quality = "legendary"}
+        wall{name="stone-wall",position={-9,1},force="player", quality = "legendary"}
 end
     
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -199,14 +200,14 @@ local on_player_respawned = function(event)
 		crash_site.create_crash_site(surface, {-5,-6}, util.copy(storage.crashed_ship_items), util.copy(storage.crashed_debris_items), util.copy(storage.crashed_ship_parts))
 		game.forces["player"].chart(surface, {{x = -200, y = -200}, {x = 200, y = 200}})
 		game.forces["enemy"].friendly_fire = false
-		util.insert_safe(player, storage.created_items)
+		util.insert_random_quality(player, storage.created_items)
         	place_turret_at_spawn()
 		-- Cleanup platforms that have no surface
 		for _, platform in pairs(game.forces["player"].platforms) do
 		platform.destroy(1)
 		end
 	else
-	util.insert_safe(player, storage.respawn_items)
+	util.insert_random_quality(player, storage.created_items)
 	end
 end
 ------------------------------------------------------------------------------------------------
@@ -448,7 +449,7 @@ end
 
 local on_player_created = function(event)
   local player = game.get_player(event.player_index)
-  util.insert_safe(player, storage.created_items)
+  util.insert_random_quality(player, storage.created_items)
 
   if not storage.init_ran then
 
